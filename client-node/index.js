@@ -65,11 +65,31 @@ async function saveOutputFile(filename, values) {
     return util.promisify(fs.writeFile)(filename, data, "utf8");
 }
 
+function getQueryLimit() {
+    const limitVar = "KAT_QUERY_LIMIT";
+    const defaultQueryLimit = 25;
+    if (!process.env.hasOwnProperty(limitVar)) {
+        return defaultQueryLimit;
+    }
+    const limitValue = process.env[limitVar];
+    const queryLimit = parseInt(limitValue);
+    if (isNaN(queryLimit)) {
+        console.error(`Failed to parse ${limitVar} value ${limitValue}`);
+        console.error(`Using default query limit ${defaultQueryLimit}`);
+        return defaultQueryLimit;
+    }
+    return queryLimit;
+}
+
 async function main() {
     const args = parseCommandLine();
     console.error(`Processing from ${args.input} to ${args.output}`);
 
     const specs = await loadInputFile(args.input);
+
+    // Limit parallelism
+    const queryLimit = getQueryLimit();
+    // FIXME: grab a semaphore and do something useful...
 
     // Do some work and save the results in specs[...].result
 
