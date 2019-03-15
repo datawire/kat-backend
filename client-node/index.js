@@ -2,6 +2,7 @@
 
 const process = require("process");
 const fs = require("fs");
+const util = require("util");
 const program = require("commander");
 
 /**
@@ -41,13 +42,7 @@ function parseCommandLine () {
  * @returns {Array<Object>}
  */
 async function loadInputFile (filename) {
-    const dataPromise = new Promise((resolve, reject) => {
-        fs.readFile(filename, "utf8", (err, data) => {
-            if (err) reject(err);
-            resolve(data);
-        });
-    })
-    const data = await dataPromise;
+    const data = await util.promisify(fs.readFile)(filename, "utf8");
     try {
         const parsed = JSON.parse(data);
         return parsed;
