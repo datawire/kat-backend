@@ -3,6 +3,15 @@
 const process = require("process");
 const program = require("commander");
 
+/**
+ * @typedef {Object} Args
+ * @property {string} input The input filename
+ * @property {string} output The output filename
+ */
+
+/**
+ * @returns {Args}
+ */
 function parseCommandLine () {
     // Work around Golang's Posix-hostile single-dash long arguments by replacing
     // "-longArg" with "--longArg" for known arguments.
