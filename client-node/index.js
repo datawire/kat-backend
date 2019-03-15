@@ -14,7 +14,7 @@ const program = require("commander");
 /**
  * @returns {Args}
  */
-function parseCommandLine () {
+function parseCommandLine() {
     // Work around Golang's Posix-hostile single-dash long arguments by replacing
     // "-longArg" with "--longArg" for known arguments.
     const mungedArgs = process.argv.map(element => {
@@ -41,7 +41,7 @@ function parseCommandLine () {
  * @param {string} filename
  * @returns {Array<Object>}
  */
-async function loadInputFile (filename) {
+async function loadInputFile(filename) {
     const data = await util.promisify(fs.readFile)(filename, "utf8");
     try {
         const parsed = JSON.parse(data);
@@ -56,7 +56,7 @@ async function loadInputFile (filename) {
  * @param {string} filename
  * @param {any} values
  */
-async function saveOutputFile (filename, values) {
+async function saveOutputFile(filename, values) {
     const data = JSON.stringify(values, null, 4) + "\n";
     if (filename === "/dev/stdout") {
         process.stdout.write(data);
@@ -65,7 +65,7 @@ async function saveOutputFile (filename, values) {
     return util.promisify(fs.writeFile)(filename, data, "utf8");
 }
 
-async function main () {
+async function main() {
     const args = parseCommandLine();
     console.error(`Processing from ${args.input} to ${args.output}`);
 
