@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const process = require("process");
+const fs = require("fs");
 const program = require("commander");
 
 /**
@@ -35,5 +36,38 @@ function parseCommandLine () {
     return { input: program.input, output: program.output };
 }
 
-args = parseCommandLine()
-console.error(`Processing from ${args.input} to ${args.output}`);
+/**
+ * @param {string} filename
+ * @returns {Array<Object>}
+ */
+async function loadInputFile (filename) {
+    const dataPromise = new Promise((resolve, reject) => {
+        fs.readFile(filename, "utf8", (err, data) => {
+            if (err) reject(err);
+            resolve(data);
+        });
+    })
+    const data = await dataPromise;
+    try {
+        const parsed = JSON.parse(data);
+        return parsed;
+    } catch (exc) {
+        console.error(`Failed to parse ${filename} as JSON`);
+        throw exc;
+    }
+}
+
+async function main () {
+    const args = parseCommandLine();
+    console.error(`Processing from ${args.input} to ${args.output}`);
+
+    const specs = await loadInputFile(args.input);
+    for (const obj of specs) {
+        console.dir(obj);
+    }
+}
+
+main().catch(reason => {
+    console.error(`Failed: ${reason}`);
+    process.exitCode = 1;
+})
