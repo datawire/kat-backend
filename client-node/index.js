@@ -52,14 +52,31 @@ async function loadInputFile (filename) {
     }
 }
 
+/**
+ * @param {string} filename
+ * @param {any} values
+ */
+async function saveOutputFile (filename, values) {
+    const data = JSON.stringify(values, null, 4) + "\n";
+    if (filename === "/dev/stdout") {
+        process.stdout.write(data);
+        return;
+    }
+    return util.promisify(fs.writeFile)(filename, data, "utf8");
+}
+
 async function main () {
     const args = parseCommandLine();
     console.error(`Processing from ${args.input} to ${args.output}`);
 
     const specs = await loadInputFile(args.input);
-    for (const obj of specs) {
-        console.dir(obj);
-    }
+
+    // Do some work and save the results in specs[...].result
+
+    // Write out specs; each object should have a .result object.
+    await saveOutputFile(args.output, specs);
+
+    console.error("Done.")
 }
 
 main().catch(reason => {
