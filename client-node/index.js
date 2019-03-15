@@ -6,12 +6,11 @@ const program = require("commander");
 function parseCommandLine () {
     // Work around Golang's Posix-hostile single-dash long arguments by replacing
     // "-longArg" with "--longArg" for known arguments.
-    let mungedArgs = [];
-    process.argv.forEach(element => {
+    const mungedArgs = process.argv.map(element => {
         if ((element.startsWith("-input") || element.startsWith("-output"))) {
-            element = "-" + element;
+            return "-" + element;
         }
-        mungedArgs.push(element);
+        return element;
     });
 
     // Parse the (munged) command line
