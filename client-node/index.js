@@ -92,6 +92,12 @@ async function main() {
     // FIXME: grab a semaphore and do something useful...
 
     // Do some work and save the results in specs[...].result
+    for (const query of specs) {
+        if (query.hasOwnProperty("result")) {
+            throw Error(`Found pre-existing results in ${query}`);
+        }
+        query["result"] = {};
+    }
 
     // Write out specs; each object should have a .result object.
     await saveOutputFile(args.output, specs);
