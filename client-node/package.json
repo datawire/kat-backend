@@ -1,0 +1,26 @@
+{
+  "name": "client-node",
+  "version": "0.1.0",
+  "description": "kat client with grpc-web support",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/datawire/kat-backend.git"
+  },
+  "author": "Datawire",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/datawire/kat-backend/issues"
+  },
+  "homepage": "https://github.com/datawire/kat-backend#readme",
+  "dependencies": {
+    "commander": "^2.19.0",
+    "google-protobuf": "^3.6.1",
+    "grpc-web": "^1.0.3",
+    "grpc-web-client": "^0.7.0",
+    "xhr2": "^0.1.4"
+  }
+}
