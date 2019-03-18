@@ -134,7 +134,44 @@ async function executeHTTPQuery(query) {
 }
 
 async function executeGRPCQuery(query) {
-    query.result.yay = true;
+    const url = new URL(query.url);
+    const requiredPath = "/echo.EchoService/Echo";
+    if (url.pathname !== requiredPath) {
+        query.result.error = `GRPC path ${url.pathname} is not ${requiredPath}`
+        return
+    }
+    const echoService = new EchoServiceClient(url.origin, null, null);
+    const request = new EchoRequest();
+
+    // FIXME: copy query.headers, remove content-type 'cause it's wrong.
+    const headers = {
+        'requested-status': "0",
+        "x-requested-header": "ok",
+        "requested-headers": "x-requested-header"
+    };
+    const echoPromise = new Promise((resolve, reject) => {
+        echoService.echo(request, headers, function (err, response) {
+            if (err) reject(err); else resolve(response);
+        })
+    });
+    try {
+        const response = await echoPromise;
+        const headersMap = response.getResponse().getHeadersMap();
+        const headersObj = {};
+        headersMap.forEach((value, key) => {
+            if (headersObj.hasOwnProperty(key)) {
+                headersObj[key].push(value);
+            } else {
+                headersObj[key] = [value];
+            }
+        });
+        query.result.headers = headersObj;
+
+        //query.result.status = status;  FIXME
+    } catch (err) {
+        query.result.error = `Request failed: [${err.code}] ${err.message}`;
+        return;
+    }
 }
 
 async function executeQuery(query, sem) {
