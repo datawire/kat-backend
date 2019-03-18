@@ -99,20 +99,27 @@ function queryIsWebsocket(query) {
     return query.url.startsWith("ws:");
 }
 
-function queryIsGRPC(query) {
-    const headers = query.headers;
+function getHeader(headers, desired) {
+    const compareKey = desired.toLowerCase();
     for (const key in headers) {
-        if (key.toLowerCase() === "content-type") {
-            let values = headers[key];
-            if (!Array.isArray(values)) {
-                values = [values];
+        if (key.toLowerCase() === compareKey) {
+            const values = headers[key];
+            if (Array.isArray(values)) {
+                return { key: key, values: values };
+            } else {
+                return { key: key, values: [values] };
             }
-            for (const value of values) {
-                if (value.toLowerCase() === "application/grpc") {
-                    return true;
-                }
-            }
-            break;
+        }
+    }
+    return [];
+}
+
+function queryIsGRPC(query) {
+    const ctValues = getHeader(query.headers, "content-type").values;
+    console.error(ctValues);
+    for (const value of ctValues) {
+        if (value.toLowerCase() === "application/grpc") {
+            return true;
         }
     }
     return false;
