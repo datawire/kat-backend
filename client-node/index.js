@@ -57,7 +57,9 @@ async function loadInputFile(filename) {
  * @param {any} values
  */
 async function saveOutputFile(filename, values) {
-    const data = JSON.stringify(values, null, 4) + "\n";
+    // Consider using json-stable-stringify to make the JSON output closer to
+    // what the Go client generates (by sorting object keys).
+    const data = JSON.stringify(values, null, 2);
     if (filename === "/dev/stdout") {
         process.stdout.write(data);
         return;
@@ -101,7 +103,6 @@ async function main() {
 
     // Write out specs; each object should have a .result object.
     await saveOutputFile(args.output, specs);
-
     console.error("Done.")
 }
 
