@@ -1,9 +1,21 @@
 #!/usr/bin/env node
 
-const process = require("process");
+// Node
 const fs = require("fs");
+const http = require("http");
+const https = require("https");
+const process = require("process");
 const util = require("util");
+
+// Third-party from npmjs.org
 const program = require("commander");
+global.XMLHttpRequest = require('xhr2');
+
+// Project
+const { EchoRequest } = require('./echo_pb.js');
+const { EchoServiceClient } = require('./echo_grpc_web_pb.js');
+const grpc = {};
+grpc.web = require('grpc-web');
 
 /**
  * @typedef {Object} Args
@@ -125,7 +137,19 @@ async function executeQuery(query, sem) {
     }
     query.result = {};
 
+    // Limit parallelism
     await sem.acquire();
+
+    /*
+    const url = new URL(query.url);
+    const options = {
+        agent: false,  // new agent per request to avoid connection pooling
+        headers: query.headers,
+        method: query.method || "GET",
+        timeout: 10 * 1000,
+        // Maybe add options from tls.connect(...)
+    }
+    */
 
     // Execute the correct type of query
     if (queryIsWebsocket(query)) {
