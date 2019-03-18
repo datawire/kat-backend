@@ -125,7 +125,7 @@ async function executeQuery(query, sem) {
     }
     query.result = {};
 
-    // FIXME: await sem.acquire() or whatever
+    await sem.acquire();
 
     // Execute the correct type of query
     if (queryIsWebsocket(query)) {
@@ -136,7 +136,21 @@ async function executeQuery(query, sem) {
         await executeHTTPQuery(query);
     }
 
-    // FIXME: await sem.release() or whatever
+    await sem.release();
+}
+
+class FakeSemaphore {
+    constructor(count) {
+        this.count = count;
+    }
+
+    acquire() {
+        return;
+    }
+
+    release() {
+        return;
+    }
 }
 
 async function main() {
@@ -147,7 +161,7 @@ async function main() {
 
     // Limit parallelism
     const queryLimit = getQueryLimit();
-    const sem = null;  // FIXME: find a semaphore on npm
+    const sem = new FakeSemaphore(queryLimit);  // FIXME: use a real semaphore
 
     // Launch queries async; a result property is added to each query object.
     const tasks = specs.map(query => executeQuery(query, sem));
