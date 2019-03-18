@@ -83,6 +83,62 @@ function getQueryLimit() {
     return queryLimit;
 }
 
+function queryIsWebsocket(query) {
+    return query.url.startsWith("ws:");
+}
+
+function queryIsGRPC(query) {
+    const headers = query.headers;
+    for (const key in headers) {
+        if (key.toLowerCase() === "content-type") {
+            let values = headers[key];
+            if (!Array.isArray(values)) {
+                values = [values];
+            }
+            for (const value of values) {
+                if (value.toLowerCase() === "application/grpc") {
+                    return true;
+                }
+            }
+            break;
+        }
+    }
+    return false;
+}
+
+async function executeWSQuery(query) {
+    query.result.unsupported = "Websocket queries are not supported."
+}
+
+async function executeHTTPQuery(query) {
+    query.result.unsupported = "HTTP(S) queries are not supported."
+}
+
+async function executeGRPCQuery(query) {
+    query.result.yay = true;
+}
+
+async function executeQuery(query, sem) {
+    // Set up where the answer will be saved
+    if (query.hasOwnProperty("result")) {
+        throw Error(`Found pre-existing results in ${query}`);
+    }
+    query.result = {};
+
+    // FIXME: await sem.acquire() or whatever
+
+    // Execute the correct type of query
+    if (queryIsWebsocket(query)) {
+        await executeWSQuery(query);
+    } else if (queryIsGRPC(query)) {
+        await executeGRPCQuery(query);
+    } else {
+        await executeHTTPQuery(query);
+    }
+
+    // FIXME: await sem.release() or whatever
+}
+
 async function main() {
     const args = parseCommandLine();
     console.error(`Processing from ${args.input} to ${args.output}`);
@@ -91,15 +147,13 @@ async function main() {
 
     // Limit parallelism
     const queryLimit = getQueryLimit();
-    // FIXME: grab a semaphore and do something useful...
+    const sem = null;  // FIXME: find a semaphore on npm
 
-    // Do some work and save the results in specs[...].result
-    for (const query of specs) {
-        if (query.hasOwnProperty("result")) {
-            throw Error(`Found pre-existing results in ${query}`);
-        }
-        query["result"] = {};
-    }
+    // Launch queries async; a result property is added to each query object.
+    const tasks = specs.map(query => executeQuery(query, sem));
+
+    // Wait for queries to finish
+    await Promise.all(tasks);
 
     // Write out specs; each object should have a .result object.
     await saveOutputFile(args.output, specs);
