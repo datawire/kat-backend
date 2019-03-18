@@ -174,7 +174,8 @@ async function main() {
     console.error("Done.")
 }
 
-main().catch(reason => {
-    console.error(`Failed: ${reason}`);
-    process.exitCode = 1;
-})
+main();
+// main().catch(reason => {
+//     console.error(`Failed: ${reason}`);
+//     process.exitCode = 1;
+// })
