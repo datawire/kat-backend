@@ -118,7 +118,6 @@ function getHeader(headers, desired) {
 
 function queryIsGRPC(query) {
     const ctValues = getHeader(query.headers, "content-type").values;
-    console.error(ctValues);
     for (const value of ctValues) {
         if (value.toLowerCase() === "application/grpc") {
             return true;
@@ -145,12 +144,18 @@ async function executeGRPCQuery(query) {
     const echoService = new EchoServiceClient(url.origin, null, null);
     const request = new EchoRequest();
 
-    // FIXME: copy query.headers, remove content-type 'cause it's wrong.
-    const headers = {
-        'requested-status': "0",
-        "x-requested-header": "ok",
-        "requested-headers": "x-requested-header"
-    };
+    // Copy original headers, then remove Content-Type: application/grpc, as
+    // that is incorrect. The grpc-web stuff will insert the correct header
+    // (Content-Type: application/grpc-web-text) on its own.
+    const headers = JSON.parse(JSON.stringify(query.headers));
+    const ctHeader = getHeader(headers, "content-type");
+    const newValue = ctHeader.values.filter(value => value.toLowerCase() !== "application/grpc");
+    if (newValue.length === 0) {
+        delete headers[ctHeader.key];
+    } else {
+        headers[ctHeader.key] = newValue;
+    }
+
     const echoPromise = new Promise((resolve, reject) => {
         echoService.echo(request, headers, function (err, response) {
             if (err) reject(err); else resolve(response);
