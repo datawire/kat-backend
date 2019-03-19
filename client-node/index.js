@@ -2,8 +2,6 @@
 
 // Node
 const fs = require("fs");
-const http = require("http");
-const https = require("https");
 const process = require("process");
 const util = require("util");
 
@@ -14,8 +12,6 @@ global.XMLHttpRequest = require("xhr2");
 // Project
 const { EchoRequest } = require("./echo_pb.js");
 const { EchoServiceClient } = require("./echo_grpc_web_pb.js");
-const grpc = {};
-grpc.web = require("grpc-web");
 
 /**
  * @typedef {Object} Args
@@ -29,9 +25,9 @@ grpc.web = require("grpc-web");
 function parseCommandLine() {
     // Work around Golang's Posix-hostile single-dash long arguments by replacing
     // "-longArg" with "--longArg" for known arguments.
-    const mungedArgs = process.argv.map(element => {
+    const mungedArgs = process.argv.map((element) => {
         if ((element.startsWith("-input") || element.startsWith("-output"))) {
-            return "-" + element;
+            return `-${element}`;
         }
         return element;
     });
@@ -76,7 +72,7 @@ async function saveOutputFile(filename, values) {
         process.stdout.write(data);
         return;
     }
-    return util.promisify(fs.writeFile)(filename, data, "utf8");
+    await util.promisify(fs.writeFile)(filename, data, "utf8");
 }
 
 function getQueryLimit() {
@@ -86,7 +82,7 @@ function getQueryLimit() {
         return defaultQueryLimit;
     }
     const limitValue = process.env[limitVar];
-    const queryLimit = parseInt(limitValue);
+    const queryLimit = parseInt(limitValue, 10);
     if (isNaN(queryLimit)) {
         console.error(`Failed to parse ${limitVar} value ${limitValue}`);
         console.error(`Using default query limit ${defaultQueryLimit}`);
@@ -106,11 +102,10 @@ function getHeader(headers, desired) {
             const values = headers[key];
             if (Array.isArray(values)) {
                 // Already an array; return a copy
-                return { key: key, values: values.slice() };
-            } else {
-                // Presumably a string; return as a new array
-                return { key: key, values: [values] };
+                return { key, values: values.slice() };
             }
+            // Presumably a string; return as a new array
+            return { key, values: [values] };
         }
     }
     return [];
@@ -157,7 +152,7 @@ async function executeGRPCQuery(query) {
     }
 
     const echoPromise = new Promise((resolve, reject) => {
-        echoService.echo(request, headers, function (err, response) {
+        echoService.echo(request, headers, (err, response) => {
             if (err) reject(err); else resolve(response);
         });
     });
@@ -174,10 +169,9 @@ async function executeGRPCQuery(query) {
         });
         query.result.headers = resHeadersObj;
 
-        //query.result.status = status;  FIXME
+        // query.result.status = status;  FIXME
     } catch (err) {
         query.result.error = `Request failed: [${err.code}] ${err.message}`;
-        return;
     }
 }
 
@@ -236,7 +230,7 @@ async function main() {
 
     // Limit parallelism
     const queryLimit = getQueryLimit();
-    const sem = new FakeSemaphore(queryLimit);  // FIXME: use a real semaphore
+    const sem = new FakeSemaphore(queryLimit); // FIXME: use a real semaphore
 
     // Launch queries async; a result property is added to each query object.
     const tasks = specs.map(query => executeQuery(query, sem));
