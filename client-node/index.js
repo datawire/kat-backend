@@ -15,6 +15,16 @@ const { EchoRequest } = require("./echo_pb.js");
 const { EchoServiceClient } = require("./echo_grpc_web_pb.js");
 
 /**
+ * See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty#Using_hasOwnProperty_as_a_property_name
+ * @param {any} obj
+ * @param {string} key
+ * @returns {boolean} whether the object has the specified property as its own property
+ */
+function has(obj, key) {
+    return Object.prototype.hasOwnProperty.call(obj, key);
+}
+
+/**
  * @typedef {Object} Args
  * @property {string} input The input filename
  * @property {string} output The output filename
@@ -79,7 +89,7 @@ async function saveOutputFile(filename, values) {
 function getQueryLimit() {
     const limitVar = "KAT_QUERY_LIMIT";
     const defaultQueryLimit = 25;
-    if (!process.env.hasOwnProperty(limitVar)) {
+    if (!has(process.env, limitVar)) {
         return defaultQueryLimit;
     }
     const limitValue = process.env[limitVar];
@@ -169,7 +179,7 @@ async function executeGRPCQuery(query) {
         const resHeadersMap = response.getResponse().getHeadersMap();
         const resHeadersObj = {};
         resHeadersMap.forEach((value, key) => {
-            if (resHeadersObj.hasOwnProperty(key)) {
+            if (has(resHeadersObj, key)) {
                 resHeadersObj[key].push(value);
             } else {
                 resHeadersObj[key] = [value];
@@ -185,7 +195,7 @@ async function executeGRPCQuery(query) {
 
 async function executeQuery(query, sem) {
     // Set up where the answer will be saved
-    if (query.hasOwnProperty("result")) {
+    if (has(query, "result")) {
         throw Error(`Found pre-existing results in ${query}`);
     }
     query.result = {};
