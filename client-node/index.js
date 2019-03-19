@@ -83,7 +83,7 @@ function getQueryLimit() {
     }
     const limitValue = process.env[limitVar];
     const queryLimit = parseInt(limitValue, 10);
-    if (isNaN(queryLimit)) {
+    if (Number.isNaN(queryLimit)) {
         console.error(`Failed to parse ${limitVar} value ${limitValue}`);
         console.error(`Using default query limit ${defaultQueryLimit}`);
         return defaultQueryLimit;
