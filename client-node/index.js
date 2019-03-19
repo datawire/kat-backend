@@ -9,13 +9,13 @@ const util = require("util");
 
 // Third-party from npmjs.org
 const program = require("commander");
-global.XMLHttpRequest = require('xhr2');
+global.XMLHttpRequest = require("xhr2");
 
 // Project
-const { EchoRequest } = require('./echo_pb.js');
-const { EchoServiceClient } = require('./echo_grpc_web_pb.js');
+const { EchoRequest } = require("./echo_pb.js");
+const { EchoServiceClient } = require("./echo_grpc_web_pb.js");
 const grpc = {};
-grpc.web = require('grpc-web');
+grpc.web = require("grpc-web");
 
 /**
  * @typedef {Object} Args
