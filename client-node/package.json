@@ -23,5 +23,50 @@
     "grpc-web": "^1.0.3",
     "grpc-web-client": "^0.7.0",
     "xhr2": "^0.1.4"
+  },
+  "devDependencies": {
+    "eslint": "^5.15.3",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.16.0"
+  },
+  "eslintConfig": {
+    "env": {
+      "commonjs": true,
+      "es6": true,
+      "node": true
+    },
+    "extends": "airbnb-base",
+    "globals": {
+      "Atomics": "readonly",
+      "SharedArrayBuffer": "readonly"
+    },
+    "parserOptions": {
+      "ecmaVersion": 2018
+    },
+    "rules": {
+      "quotes": [
+        "error",
+        "double"
+      ],
+      "indent": [
+        "error",
+        4
+      ],
+      "no-console": [
+        "error",
+        {
+          "allow": [
+            "dir",
+            "error"
+          ]
+        }
+      ],
+      "no-param-reassign": [
+        "error",
+        {
+          "props": false
+        }
+      ]
+    }
   }
 }
