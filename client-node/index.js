@@ -170,14 +170,16 @@ async function executeGRPCQuery(query) {
         headers[ctHeader.key] = newValue;
     }
 
-    const echoPromise = new Promise((resolve, reject) => {
+    // Execute the query
+    const result = await new Promise((resolve) => {
         echoService.echo(request, headers, (err, response) => {
-            if (err) reject(err); else resolve(response);
+            resolve({ response, err });
         });
     });
-    try {
-        const response = await echoPromise;
-        const resHeadersMap = response.getResponse().getHeadersMap();
+    // It's not clear to me whether response and err are mutually exclusive.
+    if (result.response) {
+        query.result["grpc-status"] = 0; // Overwritten by error handling.
+        const resHeadersMap = result.response.getResponse().getHeadersMap();
         const resHeadersObj = {};
         resHeadersMap.forEach((value, key) => {
             if (has(resHeadersObj, key)) {
@@ -187,11 +189,27 @@ async function executeGRPCQuery(query) {
             }
         });
         query.result.headers = resHeadersObj;
-
-        // query.result.status = status;  FIXME
-    } catch (err) {
-        query.result.error = `Request failed: [${err.code}] ${err.message}`;
     }
+    if (result.err) {
+        // It's hard to tell the difference between a failed connection and a
+        // successful connection that set an error code. We'll use the
+        // heuristic that DNS errors and Connection Refused both appear to
+        // return code 14.
+        if (result.err.code === 14) {
+            query.result.error = `Connection failed: [${result.err.code}] ${result.err.message}`;
+        }
+        query.result["grpc-status"] = result.err.code;
+        query.result["grpc-message"] = result.err.message;
+    }
+
+    // Stuff that's not available:
+    // - query.result.status (the HTTP status)
+    // - query.result.headers (the HTTP response headers -- we're this field
+    //   by including the response object's headers, which are the same as the
+    //   request headers modulo modification via "requested-headers" handling
+    //   by the echo service.
+    // - query.result.body (the raw HTTP body)
+    // - query.result.json or query.text (the parsed HTTP body)
 }
 
 async function executeQuery(query, sem) {
