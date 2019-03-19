@@ -95,20 +95,30 @@ function queryIsWebsocket(query) {
     return query.url.startsWith("ws:");
 }
 
+/**
+ * @typedef {Object} Header
+ * @property {string} key The header as spelled in the input
+ * @property {string[]} values The associated values
+ */
+
+/**
+* @param {Object} headers
+* @param {string} desired
+* @returns {Header}
+*/
 function getHeader(headers, desired) {
     const compareKey = desired.toLowerCase();
-    for (const key in headers) {
-        if (key.toLowerCase() === compareKey) {
-            const values = headers[key];
-            if (Array.isArray(values)) {
-                // Already an array; return a copy
-                return { key, values: values.slice() };
-            }
-            // Presumably a string; return as a new array
-            return { key, values: [values] };
+    const key = Object.keys(headers).find(hkey => hkey.toLowerCase() === compareKey);
+    if (key) {
+        const values = headers[key];
+        if (Array.isArray(values)) {
+            // Already an array; return a copy
+            return { key, values: values.slice() };
         }
+        // Presumably a string; return as a new array
+        return { key, values: [values] };
     }
-    return [];
+    return { key, values: [] };
 }
 
 function queryIsGRPC(query) {
