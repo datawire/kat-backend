@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/datawire/kat-backend#readme",
   "dependencies": {
+    "async-sema": "^3.0.0",
     "commander": "^2.19.0",
     "google-protobuf": "^3.6.1",
     "grpc-web": "^1.0.3",

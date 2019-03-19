@@ -8,6 +8,7 @@ const util = require("util");
 // Third-party from npmjs.org
 const program = require("commander");
 global.XMLHttpRequest = require("xhr2");
+const { Sema } = require("async-sema");
 
 // Project
 const { EchoRequest } = require("./echo_pb.js");
@@ -215,20 +216,6 @@ async function executeQuery(query, sem) {
     await sem.release();
 }
 
-class FakeSemaphore {
-    constructor(count) {
-        this.count = count;
-    }
-
-    acquire() {
-        return;
-    }
-
-    release() {
-        return;
-    }
-}
-
 async function main() {
     const args = parseCommandLine();
     console.error(`Processing from ${args.input} to ${args.output}`);
@@ -237,7 +224,7 @@ async function main() {
 
     // Limit parallelism
     const queryLimit = getQueryLimit();
-    const sem = new FakeSemaphore(queryLimit); // FIXME: use a real semaphore
+    const sem = new Sema(queryLimit, { capacity: specs.length });
 
     // Launch queries async; a result property is added to each query object.
     const tasks = specs.map(query => executeQuery(query, sem));
