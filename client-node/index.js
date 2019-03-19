@@ -3,6 +3,7 @@
 // Node
 const fs = require("fs");
 const process = require("process");
+const stableJsonify = require("json-stable-stringify");
 const util = require("util");
 
 // Third-party from npmjs.org
@@ -76,9 +77,9 @@ async function loadInputFile(filename) {
  * @param {any} values
  */
 async function saveOutputFile(filename, values) {
-    // Consider using json-stable-stringify to make the JSON output closer to
+    // Use json-stable-stringify to make the JSON output closer to
     // what the Go client generates (by sorting object keys).
-    const data = JSON.stringify(values, null, 2);
+    const data = stableJsonify(values, { space: 2 });
     if (filename === "/dev/stdout") {
         process.stdout.write(data);
         return;
