@@ -105,8 +105,10 @@ function getHeader(headers, desired) {
         if (key.toLowerCase() === compareKey) {
             const values = headers[key];
             if (Array.isArray(values)) {
-                return { key: key, values: values };
+                // Already an array; return a copy
+                return { key: key, values: values.slice() };
             } else {
+                // Presumably a string; return as a new array
                 return { key: key, values: [values] };
             }
         }
