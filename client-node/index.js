@@ -41,7 +41,7 @@ function parseCommandLine() {
         .usage("")
         .option("--input <path>", "Input filename", "/dev/stdin")
         .option("--output <path>", "Output filename", "/dev/stdout")
-        .parse(mungedArgs)
+        .parse(mungedArgs);
     if (program.args.length > 0) {
         program.help();
     }
@@ -127,19 +127,19 @@ function queryIsGRPC(query) {
 }
 
 async function executeWSQuery(query) {
-    query.result.unsupported = "Websocket queries are not supported."
+    query.result.unsupported = "Websocket queries are not supported.";
 }
 
 async function executeHTTPQuery(query) {
-    query.result.unsupported = "HTTP(S) queries are not supported."
+    query.result.unsupported = "HTTP(S) queries are not supported.";
 }
 
 async function executeGRPCQuery(query) {
     const url = new URL(query.url);
     const requiredPath = "/echo.EchoService/Echo";
     if (url.pathname !== requiredPath) {
-        query.result.error = `GRPC path ${url.pathname} is not ${requiredPath}`
-        return
+        query.result.error = `GRPC path ${url.pathname} is not ${requiredPath}`;
+        return;
     }
     const echoService = new EchoServiceClient(url.origin, null, null);
     const request = new EchoRequest();
@@ -159,7 +159,7 @@ async function executeGRPCQuery(query) {
     const echoPromise = new Promise((resolve, reject) => {
         echoService.echo(request, headers, function (err, response) {
             if (err) reject(err); else resolve(response);
-        })
+        });
     });
     try {
         const response = await echoPromise;
@@ -246,7 +246,7 @@ async function main() {
 
     // Write out specs; each object should have a .result object.
     await saveOutputFile(args.output, specs);
-    console.error("Done.")
+    console.error("Done.");
 }
 
 main();
