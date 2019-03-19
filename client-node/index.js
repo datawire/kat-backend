@@ -122,13 +122,10 @@ function getHeader(headers, desired) {
 }
 
 function queryIsGRPC(query) {
+    const agrpc = "application/grpc"; // maybe "application/grpc-web-text"
     const ctValues = getHeader(query.headers, "content-type").values;
-    for (const value of ctValues) {
-        if (value.toLowerCase() === "application/grpc") {
-            return true;
-        }
-    }
-    return false;
+    const idx = ctValues.findIndex(value => value.toLowerCase() === agrpc);
+    return idx !== -1; // not found yields -1
 }
 
 async function executeWSQuery(query) {
