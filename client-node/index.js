@@ -158,16 +158,16 @@ async function executeGRPCQuery(query) {
     });
     try {
         const response = await echoPromise;
-        const headersMap = response.getResponse().getHeadersMap();
-        const headersObj = {};
-        headersMap.forEach((value, key) => {
-            if (headersObj.hasOwnProperty(key)) {
-                headersObj[key].push(value);
+        const resHeadersMap = response.getResponse().getHeadersMap();
+        const resHeadersObj = {};
+        resHeadersMap.forEach((value, key) => {
+            if (resHeadersObj.hasOwnProperty(key)) {
+                resHeadersObj[key].push(value);
             } else {
-                headersObj[key] = [value];
+                resHeadersObj[key] = [value];
             }
         });
-        query.result.headers = headersObj;
+        query.result.headers = resHeadersObj;
 
         //query.result.status = status;  FIXME
     } catch (err) {
