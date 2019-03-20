@@ -176,11 +176,22 @@ async function executeGRPCQuery(query) {
             resolve({ response, err });
         });
     });
+
+    // Now process the response and err objects. Save the request headers, as
+    // echoed and modified by the service, as if they were the HTTP response
+    // headers. This is bogus, but I'm not sure what else to put here. Then
+    // add/modify header values based on what occurred so that the tests can
+    // assert on that information. Also set other result fields by synthesizing
+    // what the HTTP response values might have been.
+    query.result.headers = {};
+    query.result.body = "not supported with client-node grpc-web";
+    query.result.status = 200;
+    query.result.text = "not supported with client-node grpc-web";
+
     // It's not clear to me whether response and err are mutually exclusive.
     if (result.response) {
-        query.result["grpc-status"] = 0; // Overwritten by error handling.
         const resHeadersMap = result.response.getResponse().getHeadersMap();
-        const resHeadersObj = {};
+        const resHeadersObj = query.result.headers;
         resHeadersMap.forEach((value, key) => {
             if (has(resHeadersObj, key)) {
                 resHeadersObj[key].push(value);
@@ -188,7 +199,7 @@ async function executeGRPCQuery(query) {
                 resHeadersObj[key] = [value];
             }
         });
-        query.result.headers = resHeadersObj;
+        query.result.headers["Grpc-Status"] = ["0"];
     }
     if (result.err) {
         // It's hard to tell the difference between a failed connection and a
@@ -197,17 +208,18 @@ async function executeGRPCQuery(query) {
         // return code 14.
         if (result.err.code === 14) {
             query.result.error = `Connection failed: [${result.err.code}] ${result.err.message}`;
+            query.result.status = 999; // Or maybe delete this property?
         }
-        query.result["grpc-status"] = result.err.code;
-        query.result["grpc-message"] = result.err.message;
+        query.result.headers["Grpc-Status"] = [`${result.err.code}`];
+        query.result.headers["Grpc-Message"] = [result.err.message];
     }
 
     // Stuff that's not available:
-    // - query.result.status (the HTTP status)
-    // - query.result.headers (the HTTP response headers -- we're this field
-    //   by including the response object's headers, which are the same as the
-    //   request headers modulo modification via "requested-headers" handling
-    //   by the echo service.
+    // - query.result.status (the HTTP status -- synthesized as 200 or 999)
+    // - query.result.headers (the HTTP response headers -- we're faking this
+    //   field by including the response object's headers, which are the same as
+    //   the request headers modulo modification via "requested-headers"
+    //   handling by the echo service)
     // - query.result.body (the raw HTTP body)
     // - query.result.json or query.text (the parsed HTTP body)
 }
