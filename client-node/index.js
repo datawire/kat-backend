@@ -134,6 +134,7 @@ function getHeader(headers, desired) {
 }
 
 function queryIsGRPC(query) {
+    if (!query.headers) return false;
     const agrpc = "application/grpc"; // maybe "application/grpc-web-text"
     const ctValues = getHeader(query.headers, "content-type").values;
     const idx = ctValues.findIndex(value => value.toLowerCase() === agrpc);
