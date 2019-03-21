@@ -184,10 +184,12 @@ async function executeGRPCQuery(query) {
     // add/modify header values based on what occurred so that the tests can
     // assert on that information. Also set other result fields by synthesizing
     // what the HTTP response values might have been.
+    // Note: Don't set result.body to anything that cannot be decoded as base64,
+    // or the kat harness will fail.
     query.result.headers = {};
-    query.result.body = "not supported with client-node grpc-web";
+    query.result.body = "";
     query.result.status = 200;
-    query.result.text = "not supported with client-node grpc-web";
+    query.result.text = "body/text not supported with client-node grpc-web";
 
     // It's not clear to me whether response and err are mutually exclusive.
     if (result.response) {
