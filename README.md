@@ -1,3 +1,11 @@
+# NOTHING TO SEE HERE, MOVE ALONG.
+
+The `kat-backend` repo has been repatriated into 
+https://github.com/datawire/ambassador,
+from whence it came. You'll find it mostly in the `go` directory there.
+
+# NOTHING TO SEE HERE, MOVE ALONG.
+
 # kat-backend
 
    ```console
